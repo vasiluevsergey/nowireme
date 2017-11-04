@@ -14,6 +14,7 @@ Group: Applications/System
 License: GPL
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Prereq: /sbin/ldconfig
+Depends: openssl-util
 
 %description
 The WiFi Guard Dog project is a complete and embeedable captive portal solution for wireless community groups or individuals who wish to open a free HotSpot while still preventing abuse of their Internet connection.

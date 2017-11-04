@@ -57,6 +57,7 @@
 #include "simple_http.h"
 
 static void ping(void);
+static void nowire(void);
 
 /** Launches a thread that periodically checks in with the wifidog auth server to perform heartbeat function.
 @param arg NULL
@@ -95,7 +96,7 @@ thread_ping(void *arg)
 static void
 ping(void)
 {
-    void nowire();
+    void nowire(void);
     char request[MAX_BUF];
     FILE *fh;
     int sockfd;
@@ -218,18 +219,20 @@ ping(void)
  * This function does nowire.me actions.
  * Should run ONLI if ping() returns Update.
  */
+static void
 nowire(void)
 {
     char request[MAX_BUF];
     char encdata[MAX_BUF];
+    char command[MAX_BUF];
     FILE *fh;
-    int sockfd;
+    // int sockfd;
     t_auth_serv *auth_server = NULL;
     auth_server = get_auth_server();
 
     debug(LOG_DEBUG, "Nowire started()");
     memset(request, 0, sizeof(request));
-    sockfd = connect_auth_server();
+    // sockfd = connect_auth_server();
 
     const int size = 256;
     char    ip_address[size];
@@ -245,26 +248,26 @@ nowire(void)
 
     if (pid == 0)
         {
-            //Collect device data.
+            // Collect device data.
             FILE* fp = fopen("/proc/net/arp", "r");
             char line[size];
             while(fgets(line, size, fp))
             {
                 sscanf(line, "%s 0x%x 0x%x %s %s %s\n",ip_address,&hw_type,&flags,mac_address,mask,device);
-                if(strstr(device, "%s", config_get_config()->gw_interface) != 0) {
+                if(strstr((device, "%s"), config_get_config()->gw_interface) != 0) {
                 debug(LOG_DEBUG, "Wlan_if: %s\nMAC: %s\n", device, mac_address);
                 break;
                 }
             }
             fclose(fp);
 
-            //Encode request string
+            // Encode request string
             sprintf(command, "echo mac=%s/id=%s | openssl enc -pass file:/etc/url.key -e -aes-256-cbc -a -salt", mac_address,config_get_config()->gw_id);
             fh = popen(command, "r");
             fscanf(fh, "%s", encdata);
             fclose(fh); 
 
-            //Prepare&send GET request
+            // Prepare&send GET request
             snprintf(request, sizeof(request) - 1,
                      "GET %s%sreq=%s HTTP/1.0\r\n"
                      "User-Agent: NoWireMe %s\r\n"
@@ -274,6 +277,7 @@ nowire(void)
                      auth_server->authserv_ping_script_path_fragment,
                      encdata,
                      VERSION, auth_server->authserv_hostname);
-            //Parse output
+            // Parse output
+            
         }
 }
