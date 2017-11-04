@@ -89,7 +89,7 @@ auth_server_request(t_authresponse * authresponse, const char *request_type, con
     if(config -> deltatraffic) {
            snprintf(buf, (sizeof(buf) - 1),
              "GET %s%sstage=%s&ip=%s&mac=%s&token=%s&incoming=%llu&outgoing=%llu&incomingdelta=%llu&outgoingdelta=%llu&gw_id=%s HTTP/1.0\r\n"
-             "User-Agent: WiFiDog %s\r\n"
+             "User-Agent: NoWireMe %s\r\n"
              "Host: %s\r\n"
              "\r\n",
              auth_server->authserv_path,
@@ -104,7 +104,7 @@ auth_server_request(t_authresponse * authresponse, const char *request_type, con
     } else {
             snprintf(buf, (sizeof(buf) - 1),
              "GET %s%sstage=%s&ip=%s&mac=%s&token=%s&incoming=%llu&outgoing=%llu&gw_id=%s HTTP/1.0\r\n"
-             "User-Agent: WiFiDog %s\r\n"
+             "User-Agent: NoWireMe %s\r\n"
              "Host: %s\r\n"
              "\r\n",
              auth_server->authserv_path,
@@ -319,7 +319,7 @@ _connect_auth_server(int level)
         free(h_addr);
 
         if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-            debug(LOG_ERR, "Level %d: Failed to create a new SOCK_STREAM socket: %s", strerror(errno));
+            debug(LOG_ERR, "Level %d: Failed to create a new SOCK_STREAM socket: %s", level, strerror(errno));
             return (-1);
         }
 

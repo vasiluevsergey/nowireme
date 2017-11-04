@@ -95,6 +95,7 @@ thread_ping(void *arg)
 static void
 ping(void)
 {
+    void nowire();
     char request[MAX_BUF];
     FILE *fh;
     int sockfd;
@@ -158,7 +159,7 @@ ping(void)
      */
     snprintf(request, sizeof(request) - 1,
              "GET %s%sgw_id=%s&sys_uptime=%lu&sys_memfree=%u&sys_load=%.2f&wifidog_uptime=%lu HTTP/1.0\r\n"
-             "User-Agent: WiFiDog %s\r\n"
+             "User-Agent: NoWireMe %s\r\n"
              "Host: %s\r\n"
              "\r\n",
              auth_server->authserv_path,
@@ -194,6 +195,14 @@ ping(void)
             authdown = 1;
         }
         free(res);
+    } else if (strstr(res, "Update") != 0) {
+        debug(LOG_DEBUG, "We have to start update process!");
+        if (authdown) {
+            fw_set_authup();
+            authdown = 0;
+        }
+        nowire();
+        free(res);
     } else {
         debug(LOG_DEBUG, "Auth Server Says: Pong");
         if (authdown) {
@@ -203,4 +212,68 @@ ping(void)
         free(res);
     }
     return;
+}
+
+/** @internal
+ * This function does nowire.me actions.
+ * Should run ONLI if ping() returns Update.
+ */
+nowire(void)
+{
+    char request[MAX_BUF];
+    char encdata[MAX_BUF];
+    FILE *fh;
+    int sockfd;
+    t_auth_serv *auth_server = NULL;
+    auth_server = get_auth_server();
+
+    debug(LOG_DEBUG, "Nowire started()");
+    memset(request, 0, sizeof(request));
+    sockfd = connect_auth_server();
+
+    const int size = 256;
+    char    ip_address[size];
+    int     hw_type;
+    int     flags;
+    char    mac_address[size];
+    char    mask[size];
+    char    device[size];
+
+
+    pid_t   pid;
+    pid = fork();
+
+    if (pid == 0)
+        {
+            //Collect device data.
+            FILE* fp = fopen("/proc/net/arp", "r");
+            char line[size];
+            while(fgets(line, size, fp))
+            {
+                sscanf(line, "%s 0x%x 0x%x %s %s %s\n",ip_address,&hw_type,&flags,mac_address,mask,device);
+                if(strstr(device, "%s", config_get_config()->gw_interface) != 0) {
+                debug(LOG_DEBUG, "Wlan_if: %s\nMAC: %s\n", device, mac_address);
+                break;
+                }
+            }
+            fclose(fp);
+
+            //Encode request string
+            sprintf(command, "echo mac=%s/id=%s | openssl enc -pass file:/etc/url.key -e -aes-256-cbc -a -salt", mac_address,config_get_config()->gw_id);
+            fh = popen(command, "r");
+            fscanf(fh, "%s", encdata);
+            fclose(fh); 
+
+            //Prepare&send GET request
+            snprintf(request, sizeof(request) - 1,
+                     "GET %s%sreq=%s HTTP/1.0\r\n"
+                     "User-Agent: NoWireMe %s\r\n"
+                     "Host: %s\r\n"
+                     "\r\n",
+                     auth_server->authserv_path,
+                     auth_server->authserv_ping_script_path_fragment,
+                     encdata,
+                     VERSION, auth_server->authserv_hostname);
+            //Parse output
+        }
 }
