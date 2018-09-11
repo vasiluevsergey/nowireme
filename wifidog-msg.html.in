@@ -195,10 +195,10 @@ a.continue { color: #F00; font-weight: bold; text-decoration: none; }
           <h3>Information</h3>
             <div class="sb_content">
               <ul class="sidebar_menu">
-                    <li><a href="">Version: @WIFIDOG_VERSION@</a></li>
-                    <li><a href="">Node ID: $nodeID</a></li>
-                    <li><a href="/wifidog/status">WiFiDog Status</a></li>
-                    <li><a href="wifidog/about">About WiFiDog</a></li>
+                    <li><a href="javascript:void(0)">Version: @WIFIDOG_VERSION@</a></li>
+                    <li><a href="javascript:void(0)">Node ID: $nodeID</a></li>
+                    <li><a href="/wifidog/status">NoWireMe Status</a></li>
+                    <li><a href="wifidog/about">About NoWireMe</a></li>
                 </ul>
             </div>
         </div>    
