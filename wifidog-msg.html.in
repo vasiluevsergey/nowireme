@@ -171,6 +171,7 @@ a.continue { color: #F00; font-weight: bold; text-decoration: none; }
 #templatemo_footer .footer_menu li a { color: #6b6b6b; font-size: 11px; }
 #templatemo_footer .footer_menu li a:hover { color: #fff; }
 </style>
+
 <div id="templatemo_header">       
     <div id="site_title">
         <a href="https://nowire.me/" target="_parent"></a>
